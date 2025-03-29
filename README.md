@@ -1,4 +1,6 @@
+# THIS IS AN ALPHA SERVER, STILL UNDER DEVELOPMENT
 # Freshdesk MCP Server
+
 
 An MCP (Model Context Protocol) server that connects to the Freshdesk API, allowing LLMs to retrieve and search solution articles.
 
