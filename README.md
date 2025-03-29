@@ -63,8 +63,8 @@ To use this MCP server with Claude Desktop, add the following to your `claude_de
 {
   "mcpServers": {
     "freshdesk": {
-      "command": "node",
-      "args": ["/path/to/freshdeskmcp/build/index.js"],
+      "command": "npx",
+      "args": ["@virtualgain/freshdeskmcp"],
       "env": {
         "FD_KEY": "your_freshdesk_api_key_here",
         "FD_DOMAIN": "your_freshdesk_domain_here"
