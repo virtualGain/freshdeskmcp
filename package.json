@@ -1,5 +1,5 @@
 {
-  "name": "freshdeskmcp",
+  "name": "@virtualgain/freshdeskmcp",
   "version": "1.0.0",
   "description": "MCP Server for Freshdesk API integration",
   "type": "module",
