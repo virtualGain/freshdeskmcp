@@ -1,0 +1,10 @@
+Description
+This is an MCP (Model Context Protocol) Server that will follow Antrhopics guidwelines for building an mcp server. Review the below website for mcp server build guidelines and standards. 
+https://modelcontextprotocol.io/quickstart/server
+https://modelcontextprotocol.io/docs/concepts/architecture
+
+
+Build an MCP server that:
+- Connects to the freshdesk API using freshdesk api key described with the environment variable named: FD_KEY
+- Retrieve all solutions articles using the freshdesk api
+- make search querys to the freshdesk solutions query api endpoint
