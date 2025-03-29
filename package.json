@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "description": "MCP Server for Freshdesk API integration",
   "type": "module",
-  "main": "build/index.js",
   "bin": "./build/index.js",
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "start": "node build/index.js",
     "dev": "ts-node --esm src/index.ts"
   },
-  "keywords": ["mcp", "freshdesk", "api"],
+  "keywords": [
+    "mcp",
+    "freshdesk",
+    "api"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
