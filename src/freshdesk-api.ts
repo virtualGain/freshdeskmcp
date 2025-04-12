@@ -6,10 +6,6 @@ import {
   FreshdeskErrorResponse,
   FreshdeskFolder,
   FreshdeskFoldersResponse,
-<<<<<<< HEAD
-  FreshdeskSearchResponse
-} from './types.js';
-=======
   FreshdeskSearchResponse, // This is for Solution search
   // Import Ticket related types
   FreshdeskTicket,
@@ -82,7 +78,6 @@ function parseLinkHeader(linkHeader: string | null): PaginationInfo {
   return pagination;
 }
 
->>>>>>> 4a49081 (Initial)
 
 export class FreshdeskAPI {
   private apiKey: string;
@@ -95,89 +90,6 @@ export class FreshdeskAPI {
     this.baseUrl = `https://${domain}/api/v2`;
   }
 
-<<<<<<< HEAD
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const auth = Buffer.from(`${this.apiKey}:X`).toString('base64');
-    
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth}`,
-        ...options.headers,
-      },
-    });
-
-    const data = await response.json() as T | FreshdeskErrorResponse;
-    
-    if (!response.ok) {
-      const errorData = data as FreshdeskErrorResponse;
-      throw new Error(`Freshdesk API Error: ${errorData.message || response.statusText}`);
-    }
-    
-    return data as T;
-  }
-
-  // Get all solution categories
-  async getCategories(): Promise<FreshdeskCategory[]> {
-    try {
-      const response = await this.request<FreshdeskCategoriesResponse>('/solutions/categories');
-      
-      // Check if response is an array
-      if (!response || !Array.isArray(response)) {
-        console.error('Invalid categories response:', response);
-        // Return an empty array instead of undefined or null
-        return [];
-      }
-      
-      return response;
-    } catch (error) {
-      console.error('Error in getCategories:', error);
-      // Return an empty array on error
-      return [];
-    }
-  }
-
-  // Get folders in a category
-  async getFolders(categoryId: number): Promise<FreshdeskFolder[]> {
-    const response = await this.request<FreshdeskFoldersResponse>(`/solutions/categories/${categoryId}/folders`);
-    return response.folders;
-  }
-
-  // Get articles in a folder
-  async getArticles(folderID: number): Promise<FreshdeskArticle[]> {
-    const response = await this.request<FreshdeskArticlesResponse>(`/solutions/folders/${folderID}/articles`);
-    return response.articles;
-  }
-
-  // Get a specific article by ID
-  async getArticle(articleId: number): Promise<FreshdeskArticle> {
-    return this.request<FreshdeskArticle>(`/solutions/articles/${articleId}`);
-  }
-
-  // Search for articles
-  async searchArticles(query: string): Promise<FreshdeskSearchResponse> {
-    return this.request<FreshdeskSearchResponse>(`/search/solutions?term=${encodeURIComponent(query)}`);
-  }
-
-  // Get all articles across all categories and folders
-  async getAllArticles(): Promise<FreshdeskArticle[]> {
-    const categories = await this.getCategories();
-    const allArticles: FreshdeskArticle[] = [];
-
-    for (const category of categories) {
-      const folders = await this.getFolders(category.id);
-      
-      for (const folder of folders) {
-        const articles = await this.getArticles(folder.id);
-        allArticles.push(...articles);
-      }
-    }
-
-    return allArticles;
-  }
-=======
   // Updated request method to return the full Response object
   private async requestRaw(endpoint: string, options: RequestInit = {}): Promise<Response> {
       const url = `${this.baseUrl}${endpoint}`;
@@ -453,5 +365,4 @@ export class FreshdeskAPI {
 
   // Add other methods here (Agents, Groups, etc.) based on the plan.
 
->>>>>>> 4a49081 (Initial)
 }

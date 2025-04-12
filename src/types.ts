@@ -12,11 +12,7 @@ export interface FreshdeskFolder {
   id: number;
   name: string;
   description: string;
-<<<<<<< HEAD
-  visibility: string;
-=======
   visibility: string; // Consider using an enum if specific values are known
->>>>>>> 4a49081 (Initial)
   category_id: number;
   created_at: string;
   updated_at: string;
@@ -28,11 +24,7 @@ export interface FreshdeskArticle {
   title: string;
   description: string;
   description_text: string;
-<<<<<<< HEAD
-  status: number;
-=======
   status: number; // Consider using an enum (Draft, Published)
->>>>>>> 4a49081 (Initial)
   folder_id: number;
   category_id: number;
   agent_id: number;
@@ -61,11 +53,7 @@ export interface FreshdeskArticlesResponse {
   articles: FreshdeskArticle[];
 }
 
-<<<<<<< HEAD
-// Freshdesk API Response for Search
-=======
 // Freshdesk API Response for Search (Solutions)
->>>>>>> 4a49081 (Initial)
 export interface FreshdeskSearchResponse {
   results: FreshdeskArticle[];
   total: number;
@@ -75,9 +63,6 @@ export interface FreshdeskSearchResponse {
 export interface FreshdeskErrorResponse {
   code: string;
   message: string;
-<<<<<<< HEAD
-  errors?: Record<string, string[]>;
-=======
   errors?: Record<string, string[]>; // Field-specific validation errors
 }
 
@@ -417,5 +402,4 @@ export interface FreshdeskPaginatedContactsResponse {
     nextPage?: number;
     prevPage?: number;
   };
->>>>>>> 4a49081 (Initial)
 }

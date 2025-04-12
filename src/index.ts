@@ -7,8 +7,6 @@ import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.j
 import { z } from 'zod';
 import { FreshdeskAPI } from './freshdesk-api.js';
 import { URL } from 'url';
-<<<<<<< HEAD
-=======
 // Import Enums and Types
 import {
     TicketStatus, TicketPriority, TicketSource,
@@ -18,7 +16,6 @@ import {
     FreshdeskContactCreatePayload, FreshdeskContactUpdatePayload,
     FreshdeskContactFieldCreatePayload, FreshdeskContactFieldUpdatePayload
 } from './types.js';
->>>>>>> 4a49081 (Initial)
 
 // Load environment variables
 config();
@@ -45,11 +42,8 @@ const server = new McpServer({
   },
 });
 
-<<<<<<< HEAD
-=======
 // --- Resources ---
 
->>>>>>> 4a49081 (Initial)
 // Add a resource to get all solution articles
 server.resource(
   'all-articles',
@@ -90,11 +84,7 @@ server.resource(
       if (isNaN(articleId)) {
         throw new Error('Invalid article ID');
       }
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> 4a49081 (Initial)
       const article = await freshdesk.getArticle(articleId);
       return {
         contents: [{
@@ -116,11 +106,8 @@ server.resource(
   }
 );
 
-<<<<<<< HEAD
-=======
 // --- Tools ---
 
->>>>>>> 4a49081 (Initial)
 // Add a tool to search for articles
 server.tool(
   'search-articles',
@@ -154,35 +141,16 @@ server.tool(
 server.tool(
   'get-categories',
   'Get all solution categories and their folders',
-<<<<<<< HEAD
-  {},
-=======
   {}, // No input parameters needed
->>>>>>> 4a49081 (Initial)
   async () => {
     try {
       const categories = await freshdesk.getCategories();
       const result = [];
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> 4a49081 (Initial)
       // Check if categories is iterable
       if (!categories || !Array.isArray(categories)) {
         throw new Error('Invalid categories response: categories is not an array');
       }
-<<<<<<< HEAD
-      
-      for (const category of categories) {
-        const folders = await freshdesk.getFolders(category.id);
-        result.push({
-          category,
-          folders
-        });
-      }
-      
-=======
 
       for (const category of categories) {
         // Handle potential errors when fetching folders for a specific category
@@ -203,7 +171,6 @@ server.tool(
         }
       }
 
->>>>>>> 4a49081 (Initial)
       return {
         content: [{
           type: 'text',
@@ -227,8 +194,6 @@ server.tool(
   }
 );
 
-<<<<<<< HEAD
-=======
 // --- Ticket Tools ---
 
 // Define the input type for create-ticket handler for clarity
@@ -1017,7 +982,6 @@ server.tool(
 );
 
 
->>>>>>> 4a49081 (Initial)
 // Start the server
 async function main() {
   try {

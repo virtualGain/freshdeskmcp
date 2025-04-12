@@ -64,7 +64,7 @@ To use this MCP server with Claude Desktop, add the following to your `claude_de
   "mcpServers": {
     "freshdesk": {
       "command": "npx",
-      "args": ["@virtualgain/freshdeskmcp"],
+      "args": ["github:shadoxity/freshdeskmcp"],
       "env": {
         "FD_KEY": "your_freshdesk_api_key_here",
         "FD_DOMAIN": "your_freshdesk_domain_here"
@@ -73,6 +73,7 @@ To use this MCP server with Claude Desktop, add the following to your `claude_de
   }
 }
 ```
+
 
 ## Available Resources
 
