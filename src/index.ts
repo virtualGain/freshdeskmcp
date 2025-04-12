@@ -15,7 +15,8 @@ import {
     // Import Contact Payloads
     FreshdeskContactCreatePayload, FreshdeskContactUpdatePayload,
     FreshdeskContactFieldCreatePayload, FreshdeskContactFieldUpdatePayload,
-    FreshdeskTicketFilters
+    FreshdeskTicketFilters,
+    FreshdeskNotePayload
 } from './types.js';
 
 // Load environment variables
@@ -618,15 +619,48 @@ server.tool(
     'Use this to add additional information or commentary to an existing ticket. This does NOT modify the ticket\'s subject, description, or status — it simply adds a note for the support team to review.',
     {
         ticket_id: z.number().int().positive().describe('The ID of the ticket to add a note to'),
-        body: z.string().describe('HTML content of the note. This will appear as a separate note in the ticket timeline and will NOT replace the original ticket description.'),
+        body: z.string().describe('The content of your note in HTML format. IMPORTANT: Use this parameter name ("body"), not "note" or "content".'),
         private: z.boolean().optional().default(true).describe('Whether the note is private (visible only to agents) or public (visible to customers too). By default, notes are private (true).'),
         user_id: z.number().int().positive().optional().describe('ID of the agent/user who is adding the note. Defaults to the API key owner.'),
         notify_emails: z.array(z.string().email()).optional().describe('Email addresses of agents/users who need to be notified about this note'),
         incoming: z.boolean().optional().default(false).describe('Set to true if this note should appear as being created from outside (not through web portal). Default is false.')
         // Attachments omitted as they require special handling
     },
-    async (input: { ticket_id: number, body: string, private?: boolean, user_id?: number, notify_emails?: string[], incoming?: boolean }) => {
-        const { ticket_id, ...payload } = input;
+    async (input: any) => {
+        // Extract ticket_id
+        const ticket_id = input.ticket_id;
+        
+        if (!ticket_id) {
+            return {
+                content: [{
+                    type: 'text',
+                    text: 'Error: Missing required "ticket_id" parameter.'
+                }],
+                isError: true
+            };
+        }
+        
+        // Create a clean payload, handling the case where 'note' is used instead of 'body'
+        const payload: FreshdeskNotePayload = {
+            // If 'body' is missing but 'note' or 'content' exists, use that instead
+            body: input.body || input.note || input.content || '',
+            private: input.private,
+            user_id: input.user_id,
+            notify_emails: input.notify_emails,
+            incoming: input.incoming
+        };
+        
+        // Check for body content
+        if (!payload.body) {
+            return {
+                content: [{
+                    type: 'text',
+                    text: 'Error: Missing note content. Please provide the note content using the "body" parameter.'
+                }],
+                isError: true
+            };
+        }
+        
         try {
             const note = await freshdesk.createTicketNote(ticket_id, payload);
             return {
