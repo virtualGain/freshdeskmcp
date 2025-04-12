@@ -225,25 +225,22 @@ export class FreshdeskAPI {
 
     // Add filter parameters if provided
     if (filters) {
-      if (filters.email) params.append('email', filters.email);
+      // Direct filter parameters
+      if (filters.filter) params.append('filter', filters.filter);
       if (filters.requester_id) params.append('requester_id', filters.requester_id.toString());
+      if (filters.email) params.append('email', filters.email);
+      if (filters.unique_external_id) params.append('unique_external_id', filters.unique_external_id);
       if (filters.company_id) params.append('company_id', filters.company_id.toString());
-      if (filters.status) params.append('status', filters.status.toString());
-      if (filters.priority) params.append('priority', filters.priority.toString());
-      if (filters.source) params.append('source', filters.source.toString());
-      if (filters.group_id) params.append('group_id', filters.group_id.toString());
-      if (filters.agent_id) params.append('agent_id', filters.agent_id.toString());
-      if (filters.tags) params.append('tags', filters.tags.join(','));
-      if (filters.created_since) params.append('created_since', filters.created_since);
       if (filters.updated_since) params.append('updated_since', filters.updated_since);
-      if (filters.due_since) params.append('due_since', filters.due_since);
       
-      // Handle custom fields
-      if (filters.custom_fields) {
-        Object.entries(filters.custom_fields).forEach(([key, value]) => {
-          params.append(`custom_fields[${key}]`, value.toString());
-        });
-      }
+      // Sorting parameters
+      if (filters.created_at) params.append('created_at', filters.created_at);
+      if (filters.due_by) params.append('due_by', filters.due_by);
+      if (filters.updated_at) params.append('updated_at', filters.updated_at);
+      if (filters.status) params.append('status', filters.status);
+      
+      // Lucene query parameter
+      if (filters.query) params.append('query', filters.query);
     }
 
     const endpoint = `/tickets?${params.toString()}`;

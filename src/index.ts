@@ -14,7 +14,8 @@ import {
     FreshdeskTicketFieldCreatePayload, FreshdeskTicketFieldUpdatePayload,
     // Import Contact Payloads
     FreshdeskContactCreatePayload, FreshdeskContactUpdatePayload,
-    FreshdeskContactFieldCreatePayload, FreshdeskContactFieldUpdatePayload
+    FreshdeskContactFieldCreatePayload, FreshdeskContactFieldUpdatePayload,
+    FreshdeskTicketFilters
 } from './types.js';
 
 // Load environment variables
@@ -385,23 +386,34 @@ server.tool(
   {
       page: z.number().int().positive().optional().default(1).describe('Page number to retrieve (default: 1)'),
       per_page: z.number().int().min(1).max(100).optional().default(30).describe('Number of tickets per page (default: 30, max: 100)'),
-      email: z.string().email().optional().describe('Filter by requester email'),
+      
+      // Direct filter parameters
+      filter: z.string().optional().describe('Filter tickets by predefined filters'),
       requester_id: z.number().int().positive().optional().describe('Filter by requester ID'),
+      email: z.string().email().optional().describe('Filter by requester email'),
+      unique_external_id: z.string().optional().describe('Filter by unique external ID'),
       company_id: z.number().int().positive().optional().describe('Filter by company ID'),
-      status: z.number().int().min(1).max(4).optional().describe('Filter by status (1=Open, 2=Pending, 3=Resolved, 4=Closed)'),
-      priority: z.number().int().min(1).max(4).optional().describe('Filter by priority (1=Low, 2=Medium, 3=High, 4=Urgent)'),
-      source: z.number().int().min(1).max(10).optional().describe('Filter by source (1=Email, 2=Portal, 3=Phone, 4=Chat, 7=Feedback, 9=Feedback Widget, 10=Outbound Email)'),
-      group_id: z.number().int().positive().optional().describe('Filter by group ID'),
-      agent_id: z.number().int().positive().optional().describe('Filter by agent ID'),
-      tags: z.array(z.string()).optional().describe('Filter by tags'),
-      created_since: z.string().optional().describe('Filter tickets created since date (ISO 8601 format)'),
-      updated_since: z.string().optional().describe('Filter tickets updated since date (ISO 8601 format)'),
-      due_since: z.string().optional().describe('Filter tickets due since date (ISO 8601 format)'),
-      custom_fields: z.record(z.any()).optional().describe('Filter by custom fields (e.g., {"cf_order_id": "123"})')
+      updated_since: z.string().optional().describe('Filter tickets updated since timestamp (ISO 8601 format)'),
+      
+      // Sorting parameters
+      created_at: z.enum(['asc', 'desc']).optional().describe('Sort by creation date'),
+      due_by: z.enum(['asc', 'desc']).optional().describe('Sort by due date'),
+      updated_at: z.enum(['asc', 'desc']).optional().describe('Sort by last updated date'),
+      status_sort: z.enum(['asc', 'desc']).optional().describe('Sort by status'),
+      
+      // Lucene query parameter - supports advanced filtering
+      query: z.string().optional().describe('Advanced filter using Lucene syntax. Example: "status:2" for open tickets, "priority:3 AND agent_id:123", "tag:\'urgent\'"')
   },
   async (input) => {
       try {
-          const { page, per_page, ...filters } = input;
+          const { page, per_page, status_sort, ...restFilters } = input;
+          
+          // Map status_sort to status since we renamed it to avoid conflict
+          const filters: FreshdeskTicketFilters = {
+            ...restFilters,
+            status: status_sort
+          };
+          
           const result = await freshdesk.listTickets(page, per_page, filters);
           return {
               content: [{

@@ -406,17 +406,20 @@ export interface FreshdeskPaginatedContactsResponse {
 
 // Interface for ticket filters
 export interface FreshdeskTicketFilters {
-  email?: string;
+  // Direct filter parameters
+  filter?: string;
   requester_id?: number;
+  email?: string;
+  unique_external_id?: string;
   company_id?: number;
-  status?: number;
-  priority?: number;
-  source?: number;
-  group_id?: number;
-  agent_id?: number;
-  tags?: string[];
-  created_since?: string; // ISO 8601 format
-  updated_since?: string; // ISO 8601 format
-  due_since?: string; // ISO 8601 format
-  custom_fields?: Record<string, any>;
+  updated_since?: string;
+  
+  // Sorting parameters
+  created_at?: 'asc' | 'desc';
+  due_by?: 'asc' | 'desc';
+  updated_at?: 'asc' | 'desc';
+  status?: 'asc' | 'desc';
+  
+  // Lucene query parameter
+  query?: string;
 }
