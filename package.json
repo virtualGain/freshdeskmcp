@@ -7,7 +7,11 @@
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
+<<<<<<< HEAD
     "start": "node build/index.js",
+=======
+    "start": "node -r dotenv/config build/index.js",
+>>>>>>> 4a49081 (Initial)
     "dev": "ts-node --esm src/index.ts"
   },
   "keywords": [
@@ -24,8 +28,16 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@types/node": "^20.10.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
 }
+=======
+    "@types/node": "^20.17.30",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
+>>>>>>> 4a49081 (Initial)
