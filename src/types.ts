@@ -281,7 +281,9 @@ export interface FreshdeskNotePayload {
     body: string; // HTML content of the note
     private?: boolean; // Default is true (private note)
     user_id?: number; // Optional: Agent ID creating the note (defaults to API key owner)
-    // Add attachments if needed
+    notify_emails?: string[]; // Optional: Email addresses of agents/users to notify about this note
+    incoming?: boolean; // Optional: Set to true if note should appear as created from outside (default: false)
+    // attachments field omitted as it requires special handling
 }
 
 // --- Ticket Field Types ---

@@ -340,7 +340,7 @@ server.tool(
 // Tool to update a ticket
 server.tool(
   'update-ticket',
-  'Update an existing ticket in Freshdesk',
+  'Update an existing ticket in Freshdesk. IMPORTANT: This will modify the original ticket fields including subject, description, status, etc. If you only need to add information without changing the original ticket content, use create-ticket-note instead.',
   {
     ticket_id: z.number().int().positive().describe('The ID of the ticket to update'),
     
@@ -615,14 +615,17 @@ server.tool(
 // Tool to create a ticket note
 server.tool(
     'create-ticket-note',
-    'Create a note for a ticket',
+    'Add a note to an existing ticket without modifying the original ticket content. Use this when you need to add supplementary information to a ticket without changing its original description or other fields.',
     {
         ticket_id: z.number().int().positive().describe('The ID of the ticket to add a note to'),
-        body: z.string().describe('HTML content of the note'),
-        private: z.boolean().optional().default(true).describe('Set to false for a public note (default: true)'),
-        user_id: z.number().int().positive().optional().describe('Agent ID creating the note (defaults to API key owner)')
+        body: z.string().describe('HTML content of the note. This will appear as a separate note in the ticket timeline and will NOT replace the original ticket description.'),
+        private: z.boolean().optional().default(true).describe('Whether the note is private (visible only to agents) or public (visible to customers too). By default, notes are private (true).'),
+        user_id: z.number().int().positive().optional().describe('ID of the agent/user who is adding the note. Defaults to the API key owner.'),
+        notify_emails: z.array(z.string().email()).optional().describe('Email addresses of agents/users who need to be notified about this note'),
+        incoming: z.boolean().optional().default(false).describe('Set to true if this note should appear as being created from outside (not through web portal). Default is false.')
+        // Attachments omitted as they require special handling
     },
-    async (input: { ticket_id: number, body: string, private?: boolean, user_id?: number }) => {
+    async (input: { ticket_id: number, body: string, private?: boolean, user_id?: number, notify_emails?: string[], incoming?: boolean }) => {
         const { ticket_id, ...payload } = input;
         try {
             const note = await freshdesk.createTicketNote(ticket_id, payload);
