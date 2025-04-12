@@ -74,6 +74,8 @@ To use this MCP server with Claude Desktop, add the following to your `claude_de
 }
 ```
 
+You can update args to github:shadoxity/freshdeskmcp to run from github if its not on npmjs yet.
+
 ## Available Resources
 
 - `freshdesk://articles` - Get all solution articles
