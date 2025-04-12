@@ -197,53 +197,97 @@ server.tool(
 
 // --- Ticket Tools ---
 
-// Define the input type for create-ticket handler for clarity
-type CreateTicketInput = {
-  subject: string;
-  description: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  source: TicketSource;
-  email?: string;
-  requester_id?: number;
-  responder_id?: number;
-  group_id?: number;
-  tags?: string[];
-  custom_fields?: Record<string, any>;
-};
-
 // Tool to create a ticket
 server.tool(
   'create-ticket',
   'Create a new ticket in Freshdesk',
-  // Define the schema directly as an object literal
   {
+    // Required fields
     subject: z.string().describe('Subject of the ticket'),
     description: z.string().describe('HTML content of the ticket description'),
-    status: z.nativeEnum(TicketStatus).describe('Status of the ticket (e.g., OPEN, PENDING)'),
-    priority: z.nativeEnum(TicketPriority).describe('Priority of the ticket (e.g., LOW, MEDIUM)'),
-    source: z.nativeEnum(TicketSource).describe('Source of the ticket (e.g., EMAIL, PHONE)'),
-    email: z.string().email().optional().describe('Email address of the requester. Required if requester_id is not provided.'),
-    requester_id: z.number().int().positive().optional().describe('User ID of the requester. Required if email is not provided.'),
-    responder_id: z.number().int().positive().optional().describe('ID of the agent to whom the ticket is assigned'),
-    group_id: z.number().int().positive().optional().describe('ID of the group to which the ticket is assigned'),
-    tags: z.array(z.string()).optional().describe('Array of tags associated with the ticket'),
-    custom_fields: z.record(z.any()).optional().describe('Key-value pairs for custom fields (e.g., {"cf_order_id": "123"})'),
+    
+    // Status, priority, and source as numbers with descriptions of values
+    status: z.number().int().min(2).max(5).default(2)
+      .describe('Status of the ticket: 2=Open, 3=Pending, 4=Resolved, 5=Closed (default: 2)'),
+    priority: z.number().int().min(1).max(4).default(1)
+      .describe('Priority of the ticket: 1=Low, 2=Medium, 3=High, 4=Urgent (default: 1)'),
+    source: z.number().int().min(1).max(10).default(2)
+      .describe('Source of the ticket: 1=Email, 2=Portal, 3=Phone, 7=Chat, 9=Feedback Widget, 10=Outbound Email (default: 2)'),
+    
+    // Requester identification - at least one is required
+    email: z.string().email().optional()
+      .describe('Email address of the requester. If no contact exists with this email, it will be added as a new contact.'),
+    requester_id: z.number().int().positive().optional()
+      .describe('User ID of the requester. For existing contacts, this can be passed instead of the email.'),
+    facebook_id: z.string().optional()
+      .describe('Facebook ID of the requester. A contact should exist with this facebook_id in Freshdesk.'),
+    phone: z.string().optional()
+      .describe('Phone number of the requester. If no contact exists with this phone, it will be added as a new contact.'),
+    twitter_id: z.string().optional()
+      .describe('Twitter handle of the requester. If no contact exists with this handle, it will be added as a new contact.'),
+    unique_external_id: z.string().optional()
+      .describe('External ID of the requester. If no contact exists with this external ID, they will be added as a new contact.'),
+    name: z.string().optional()
+      .describe('Name of the requester. Required if phone is provided but email is not.'),
+    
+    // Optional fields
+    type: z.string().optional()
+      .describe('Helps categorize the ticket according to the different kinds of issues your support team deals with.'),
+    responder_id: z.number().int().positive().optional()
+      .describe('ID of the agent to whom the ticket is assigned'),
+    cc_emails: z.array(z.string().email()).optional()
+      .describe('Email addresses added in the CC field of the ticket'),
+    custom_fields: z.record(z.any()).optional()
+      .describe('Key-value pairs for custom fields (e.g., {"cf_order_id": "123"})'),
+    due_by: z.string().optional()
+      .describe('Timestamp that denotes when the ticket is due to be resolved (ISO date format)'),
+    email_config_id: z.number().int().positive().optional()
+      .describe('ID of email config to use for this ticket (e.g., support@company.com/sales@company.com)'),
+    fr_due_by: z.string().optional()
+      .describe('Timestamp that denotes when the first response is due (ISO date format)'),
+    group_id: z.number().int().positive().optional()
+      .describe('ID of the group to which the ticket is assigned'),
+    parent_id: z.number().int().positive().optional()
+      .describe('ID of the parent ticket to link this ticket to (will convert this to a child ticket)'),
+    product_id: z.number().int().positive().optional()
+      .describe('ID of the product to which the ticket is associated'),
+    tags: z.array(z.string()).optional()
+      .describe('Tags to associate with the ticket'),
+    company_id: z.number().int().positive().optional()
+      .describe('Company ID of the requester (requires Multiple Companies feature enabled)'),
+    internal_agent_id: z.number().int().positive().optional()
+      .describe('ID of the internal agent to assign the ticket to'),
+    internal_group_id: z.number().int().positive().optional()
+      .describe('ID of the internal group to assign the ticket to'),
+    lookup_parameter: z.string().optional()
+      .describe('Value for custom objects lookup field (requires Custom Objects enabled)')
   },
-  async (input: CreateTicketInput) => { // Use the defined type for input
+  async (input) => { // Use direct input without type assertion
     // Perform the refinement check inside the handler
-    if (!input.email && !input.requester_id) {
+    if (!input.email && !input.requester_id && !input.facebook_id && !input.phone && 
+        !input.twitter_id && !input.unique_external_id) {
       return {
         content: [{
           type: 'text',
-          text: 'Validation Error: Either email or requester_id must be provided.'
+          text: 'Validation Error: At least one requester identifier (email, requester_id, facebook_id, phone, twitter_id, or unique_external_id) must be provided.'
+        }],
+        isError: true
+      };
+    }
+    
+    // Additional validation: If phone is provided but email is not, name is required
+    if (input.phone && !input.email && !input.name) {
+      return {
+        content: [{
+          type: 'text',
+          text: 'Validation Error: Name is required when using phone without an email address.'
         }],
         isError: true
       };
     }
 
     try {
-      // Input is validated (base schema + refinement check)
+      // Input is validated, pass directly to API
       const createdTicket = await freshdesk.createTicket(input);
       return {
         content: [{
@@ -293,29 +337,71 @@ server.tool(
   }
 );
 
-// Define the input type for update-ticket handler
-// Use Partial<> to make fields optional, except ticket_id
-type UpdateTicketInput = { ticket_id: number } & Partial<Omit<FreshdeskTicketUpdatePayload, 'ticket_id'>>;
-
 // Tool to update a ticket
 server.tool(
   'update-ticket',
   'Update an existing ticket in Freshdesk',
-  // Define the schema directly
   {
     ticket_id: z.number().int().positive().describe('The ID of the ticket to update'),
+    
+    // Fields that can be updated
     subject: z.string().optional().describe('New subject for the ticket'),
     description: z.string().optional().describe('New HTML content for the ticket description'),
-    status: z.nativeEnum(TicketStatus).optional().describe('New status for the ticket'),
-    priority: z.nativeEnum(TicketPriority).optional().describe('New priority for the ticket'),
-    source: z.nativeEnum(TicketSource).optional().describe('New source for the ticket'),
-    requester_id: z.number().int().positive().optional().describe('New user ID of the requester'),
-    responder_id: z.number().int().positive().optional().describe('New ID of the agent assigned'),
-    group_id: z.number().int().positive().optional().describe('New ID of the group assigned'),
-    tags: z.array(z.string()).optional().describe('New array of tags (replaces existing tags)'),
-    custom_fields: z.record(z.any()).optional().describe('New key-value pairs for custom fields (merges/overwrites existing)'),
+    
+    // Status, priority, and source as numbers with descriptions of values
+    status: z.number().int().min(2).max(5).optional()
+      .describe('New status for the ticket: 2=Open, 3=Pending, 4=Resolved, 5=Closed'),
+    priority: z.number().int().min(1).max(4).optional()
+      .describe('New priority for the ticket: 1=Low, 2=Medium, 3=High, 4=Urgent'),
+    source: z.number().int().min(1).max(10).optional()
+      .describe('New source for the ticket: 1=Email, 2=Portal, 3=Phone, 7=Chat, 9=Feedback Widget, 10=Outbound Email'),
+    
+    // Requester identification
+    name: z.string().optional().describe('New name of the requester'),
+    email: z.string().email().optional()
+      .describe('New email address of the requester. If no contact exists with this email, it will be added as a new contact.'),
+    requester_id: z.number().int().positive().optional()
+      .describe('New user ID of the requester. For existing contacts, can be passed instead of the email.'),
+    facebook_id: z.string().optional()
+      .describe('New Facebook ID of the requester. A contact should exist with this facebook_id in Freshdesk.'),
+    phone: z.string().optional()
+      .describe('New phone number of the requester. If no contact exists with this phone, it will be added as a new contact.'),
+    twitter_id: z.string().optional()
+      .describe('New Twitter handle of the requester. If no contact exists with this handle, it will be added as a new contact.'),
+    unique_external_id: z.string().optional()
+      .describe('New external ID of the requester. If no contact exists with this external ID, they will be added as a new contact.'),
+    
+    // Other fields
+    type: z.string().optional()
+      .describe('New categorization of the ticket'),
+    responder_id: z.number().int().positive().optional()
+      .describe('New ID of the agent to whom the ticket is assigned'),
+    custom_fields: z.record(z.any()).optional()
+      .describe('New key-value pairs for custom fields (merges/overwrites existing)'),
+    due_by: z.string().optional()
+      .describe('New timestamp that denotes when the ticket is due to be resolved (ISO date format)'),
+    email_config_id: z.number().int().positive().optional()
+      .describe('New ID of email config to use for this ticket'),
+    fr_due_by: z.string().optional()
+      .describe('New timestamp that denotes when the first response is due (ISO date format)'),
+    group_id: z.number().int().positive().optional()
+      .describe('New ID of the group to which the ticket is assigned'),
+    parent_id: z.number().int().positive().optional()
+      .describe('New ID of the parent ticket to link this ticket to (will convert this to a child ticket)'),
+    product_id: z.number().int().positive().optional()
+      .describe('New ID of the product to which the ticket is associated'),
+    tags: z.array(z.string()).optional()
+      .describe('New tags to associate with the ticket (replaces existing tags)'),
+    company_id: z.number().int().positive().optional()
+      .describe('New company ID of the requester (requires Multiple Companies feature enabled)'),
+    internal_agent_id: z.number().int().positive().optional()
+      .describe('New ID of the internal agent to assign the ticket to'),
+    internal_group_id: z.number().int().positive().optional()
+      .describe('New ID of the internal group to assign the ticket to'),
+    lookup_parameter: z.string().optional()
+      .describe('New value for custom objects lookup field (requires Custom Objects enabled)')
   },
-  async (input: UpdateTicketInput) => {
+  async (input) => {
     const { ticket_id, ...updatePayload } = input; // Separate ticket_id from the payload
 
     // Ensure there's something to update

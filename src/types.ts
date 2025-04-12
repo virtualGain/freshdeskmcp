@@ -155,35 +155,79 @@ export interface FreshdeskTicketSearchResponse {
 
 // Structure for creating a ticket
 export interface FreshdeskTicketCreatePayload {
+  // Required fields
   subject: string;
   description: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  source: TicketSource;
+  
+  // Status, priority, and source (using numbers instead of enums for clarity)
+  status: number; // Status: 2=Open, 3=Pending, 4=Resolved, 5=Closed
+  priority: number; // Priority: 1=Low, 2=Medium, 3=High, 4=Urgent
+  source: number; // Source: 1=Email, 2=Portal, 3=Phone, 7=Chat, 9=Feedback Widget, 10=Outbound Email
+  
+  // Requester identification (at least one is required)
   email?: string;
   requester_id?: number;
-  responder_id?: number;
-  group_id?: number;
+  facebook_id?: string;
   phone?: string;
+  twitter_id?: string;
+  unique_external_id?: string;
   name?: string;
-  tags?: string[];
+  
+  // Optional fields
+  type?: string;
+  responder_id?: number;
+  cc_emails?: string[];
   custom_fields?: Record<string, any>;
-  // Add other creatable fields as needed
+  due_by?: string; // ISO date format
+  email_config_id?: number;
+  fr_due_by?: string; // ISO date format
+  group_id?: number;
+  parent_id?: number;
+  product_id?: number;
+  tags?: string[];
+  company_id?: number;
+  internal_agent_id?: number;
+  internal_group_id?: number;
+  lookup_parameter?: string;
+  // attachments field omitted as it requires special handling
 }
 
 // Structure for updating a ticket
 export interface FreshdeskTicketUpdatePayload {
+  // Optional fields that can be updated
   subject?: string;
   description?: string;
-  status?: TicketStatus;
-  priority?: TicketPriority;
-  source?: TicketSource;
+  
+  // Status, priority, and source (using numbers instead of enums for clarity)
+  status?: number; // Status: 2=Open, 3=Pending, 4=Resolved, 5=Closed
+  priority?: number; // Priority: 1=Low, 2=Medium, 3=High, 4=Urgent
+  source?: number; // Source: 1=Email, 2=Portal, 3=Phone, 7=Chat, 9=Feedback Widget, 10=Outbound Email
+  
+  // Requester identification
+  email?: string;
   requester_id?: number;
+  facebook_id?: string;
+  phone?: string;
+  twitter_id?: string;
+  unique_external_id?: string;
+  name?: string;
+  
+  // Other fields
+  type?: string;
   responder_id?: number;
-  group_id?: number;
-  tags?: string[];
   custom_fields?: Record<string, any>;
-  // Add other updatable fields as needed
+  due_by?: string; // ISO date format
+  email_config_id?: number;
+  fr_due_by?: string; // ISO date format
+  group_id?: number;
+  parent_id?: number;
+  product_id?: number;
+  tags?: string[];
+  company_id?: number;
+  internal_agent_id?: number;
+  internal_group_id?: number;
+  lookup_parameter?: string;
+  // attachments field omitted as it requires special handling
 }
 
 // Structure for pagination info parsed from Link header
