@@ -38,6 +38,7 @@ import {
   // Import Pagination types
   PaginationInfo,
   FreshdeskPaginatedTicketsResponse,
+  FreshdeskTicketFilters,
 } from './types.js';
 import { URLSearchParams } from 'url'; // Needed for URLSearchParams
 
@@ -209,13 +210,42 @@ export class FreshdeskAPI {
       method: 'DELETE',
     });
    }
-  async listTickets(page: number = 1, perPage: number = 30): Promise<FreshdeskPaginatedTicketsResponse> {
+  async listTickets(
+    page: number = 1,
+    perPage: number = 30,
+    filters?: FreshdeskTicketFilters
+  ): Promise<FreshdeskPaginatedTicketsResponse> {
     const validPage = Math.max(1, page);
     const validPerPage = Math.min(Math.max(1, perPage), 100);
+    
     const params = new URLSearchParams({
       page: validPage.toString(),
       per_page: validPerPage.toString(),
     });
+
+    // Add filter parameters if provided
+    if (filters) {
+      if (filters.email) params.append('email', filters.email);
+      if (filters.requester_id) params.append('requester_id', filters.requester_id.toString());
+      if (filters.company_id) params.append('company_id', filters.company_id.toString());
+      if (filters.status) params.append('status', filters.status.toString());
+      if (filters.priority) params.append('priority', filters.priority.toString());
+      if (filters.source) params.append('source', filters.source.toString());
+      if (filters.group_id) params.append('group_id', filters.group_id.toString());
+      if (filters.agent_id) params.append('agent_id', filters.agent_id.toString());
+      if (filters.tags) params.append('tags', filters.tags.join(','));
+      if (filters.created_since) params.append('created_since', filters.created_since);
+      if (filters.updated_since) params.append('updated_since', filters.updated_since);
+      if (filters.due_since) params.append('due_since', filters.due_since);
+      
+      // Handle custom fields
+      if (filters.custom_fields) {
+        Object.entries(filters.custom_fields).forEach(([key, value]) => {
+          params.append(`custom_fields[${key}]`, value.toString());
+        });
+      }
+    }
+
     const endpoint = `/tickets?${params.toString()}`;
     const response = await this.requestRaw(endpoint);
     if (!response.ok) {
@@ -236,7 +266,7 @@ export class FreshdeskAPI {
         prevPage: paginationInfo.prevPage,
       },
     };
-   }
+  }
   async searchTickets(query: string): Promise<FreshdeskTicketSearchResponse> {
     const encodedQuery = encodeURIComponent(query);
     const endpoint = `/search/tickets?query="${encodedQuery}"`;

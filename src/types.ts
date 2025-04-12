@@ -403,3 +403,20 @@ export interface FreshdeskPaginatedContactsResponse {
     prevPage?: number;
   };
 }
+
+// Interface for ticket filters
+export interface FreshdeskTicketFilters {
+  email?: string;
+  requester_id?: number;
+  company_id?: number;
+  status?: number;
+  priority?: number;
+  source?: number;
+  group_id?: number;
+  agent_id?: number;
+  tags?: string[];
+  created_since?: string; // ISO 8601 format
+  updated_since?: string; // ISO 8601 format
+  due_since?: string; // ISO 8601 format
+  custom_fields?: Record<string, any>;
+}

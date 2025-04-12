@@ -381,15 +381,28 @@ server.tool(
 // Tool to list tickets with pagination
 server.tool(
   'list-tickets',
-  'List tickets from Freshdesk with pagination support',
+  'List tickets from Freshdesk with pagination and filtering support',
   {
       page: z.number().int().positive().optional().default(1).describe('Page number to retrieve (default: 1)'),
-      per_page: z.number().int().min(1).max(100).optional().default(30).describe('Number of tickets per page (default: 30, max: 100)')
+      per_page: z.number().int().min(1).max(100).optional().default(30).describe('Number of tickets per page (default: 30, max: 100)'),
+      email: z.string().email().optional().describe('Filter by requester email'),
+      requester_id: z.number().int().positive().optional().describe('Filter by requester ID'),
+      company_id: z.number().int().positive().optional().describe('Filter by company ID'),
+      status: z.number().int().min(1).max(4).optional().describe('Filter by status (1=Open, 2=Pending, 3=Resolved, 4=Closed)'),
+      priority: z.number().int().min(1).max(4).optional().describe('Filter by priority (1=Low, 2=Medium, 3=High, 4=Urgent)'),
+      source: z.number().int().min(1).max(10).optional().describe('Filter by source (1=Email, 2=Portal, 3=Phone, 4=Chat, 7=Feedback, 9=Feedback Widget, 10=Outbound Email)'),
+      group_id: z.number().int().positive().optional().describe('Filter by group ID'),
+      agent_id: z.number().int().positive().optional().describe('Filter by agent ID'),
+      tags: z.array(z.string()).optional().describe('Filter by tags'),
+      created_since: z.string().optional().describe('Filter tickets created since date (ISO 8601 format)'),
+      updated_since: z.string().optional().describe('Filter tickets updated since date (ISO 8601 format)'),
+      due_since: z.string().optional().describe('Filter tickets due since date (ISO 8601 format)'),
+      custom_fields: z.record(z.any()).optional().describe('Filter by custom fields (e.g., {"cf_order_id": "123"})')
   },
-  async ({ page, per_page }: { page?: number, per_page?: number }) => {
+  async (input) => {
       try {
-          // The API method uses defaults if page/per_page are undefined
-          const result = await freshdesk.listTickets(page, per_page);
+          const { page, per_page, ...filters } = input;
+          const result = await freshdesk.listTickets(page, per_page, filters);
           return {
               content: [{
                   type: 'text',
