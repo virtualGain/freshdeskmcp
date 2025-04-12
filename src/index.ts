@@ -340,7 +340,7 @@ server.tool(
 // Tool to update a ticket
 server.tool(
   'update-ticket',
-  'Update an existing ticket in Freshdesk. IMPORTANT: This will modify the original ticket fields including subject, description, status, etc. If you only need to add information without changing the original ticket content, use create-ticket-note instead.',
+  'Use ONLY to update a ticket\'s subject, status, or main description. This modifies the original ticket content. DO NOT use this to add new comments or supplemental info — use create-ticket-note instead.',
   {
     ticket_id: z.number().int().positive().describe('The ID of the ticket to update'),
     
@@ -615,7 +615,7 @@ server.tool(
 // Tool to create a ticket note
 server.tool(
     'create-ticket-note',
-    'Add a note to an existing ticket without modifying the original ticket content. Use this when you need to add supplementary information to a ticket without changing its original description or other fields.',
+    'Use this to add additional information or commentary to an existing ticket. This does NOT modify the ticket\'s subject, description, or status — it simply adds a note for the support team to review.',
     {
         ticket_id: z.number().int().positive().describe('The ID of the ticket to add a note to'),
         body: z.string().describe('HTML content of the note. This will appear as a separate note in the ticket timeline and will NOT replace the original ticket description.'),
